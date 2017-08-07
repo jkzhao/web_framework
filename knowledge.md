@@ -1,4 +1,9 @@
-实现一个简单的web框架，不实现模板渲染，实现一个restful的web框架
+实现一个简单的web框架，不实现模板渲染，实现一个restful的web框架。restful是不处理cookie和session的
+
+一个简单的Web框架应该实现哪些功能：
+- request解析
+- response封装
+- 路由
 
 # CGI
 CGI是一个协议。
