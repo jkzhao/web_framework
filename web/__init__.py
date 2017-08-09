@@ -122,5 +122,8 @@ class Application:
         for router in self.routers:
             handler = router.match(request)
             if handler:
-                return handler(self, request)
+                # pre process request
+                res = handler(self, request)
+                # post process response
+                return res
         raise HTTPNotFound(detail='no handler match')
