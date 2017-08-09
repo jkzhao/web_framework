@@ -8,9 +8,10 @@
 '''
 import re
 from collections import namedtuple
-from html import escape
 from webob import Request, Response # webob里封装了Request和Response
 from webob.dec import wsgify # webob提供的装饰器，可以将代码大大简化
+from webob.exc import HTTPNotFound
+#from webob.exc import * # 引入webob所有的Exception
 
 # 这里我们把 str 分成3种：1.str 所有不包含 / 的字符；2.word 字母、数字和下划线；3.any：任意字符
 PATTERNS = {
@@ -85,12 +86,12 @@ class Router:
     #         return fn # 这里不需要执行fn，原样返回就行了
     #
     #     return dec
-    def route(self, pattern, methods=None):
+    def route(self, rule, methods=None):
         if methods is None:
             methods = ('GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTION')
 
         def dec(fn): # fn就是传递进来的handler
-            self._route(pattern, methods, fn)
+            self._route(rule, methods, fn)
             def wrap(*args, **kwargs):
                 return fn # 这里不需要执行fn，原样返回就行了
             return wrap
@@ -118,18 +119,22 @@ class Application:
     def __init__(self, **options): # options这里作为全局的设置，传递给views
         self.routers = []
         self.options = options
+
     def add_router(self, router):
         self.routers.append(router)
 
     @wsgify
     def __call__(self, request):
-        for router in self.routers: # 一个应用不会有太多的route，这里查询效率不会低的
+        for router in self.routers:
             handler = router.match(request)
             if handler:
                 return handler(self, request)
+        raise HTTPNotFound(detail='no handler match')
 
 
 # 上面都是框架代码，下面是业务代码
+from webob.exc import HTTPTemporaryRedirect
+from html import escape
 
 r1 = Router()
 r2 = Router('/r2') # 前缀r2，127.0.0.1:3000/r2/hello/jkzhao
@@ -137,7 +142,8 @@ r3 = Router(domain='jinzhi.wisedu.com') # 需要修改hosts文件，配置ip地�
 
 @r3.route('/')
 def main(app, request):
-    return Response('this is man page')
+    # return Response('this is man page')
+    raise HTTPTemporaryRedirect(location='/r2/hello/jkzhao/26') # 302临时跳转,webob内部实现了
 
 @r2.route('/hello/{name}/{age:int}') # 抛去正则表达式，这样写很简单，不写类型就是string。下面的方式要求框架的使用者熟悉正则。
 # @r2.route(r'/hello/(?P<name>\w+)$') # 传递方式变为 127.0.0.1:3000/hello/jkzhao 这样就可以通过path来传递参数了
