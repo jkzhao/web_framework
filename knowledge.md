@@ -3,7 +3,16 @@
 一个简单的Web框架应该实现哪些功能：
 - request解析
 - response封装
-- 路由
+- 路由(Tornado没有子路由)
+
+其他的东西，比如认证，都是写一个装饰器就能搞定了。框架有是好的，没有我们就自己写个装饰器。
+
+插件，比如数据库，缓存等。web框架的中间件，处理之前做些事，处理之后做些事。比如把权限控制放到这个中间件里面做，当然我们完全可以在应用里面直接写装饰器来权限控制。
+restful的web框架认证可以采用http basic方式验证，也可以使用json web token的方式认证，非restful的web框架一般都用cookie和session认证。
+
+json web token其实是一种编码方式，把一些东西编码到token里面，可以看看它的python库--pyjwt。
+
+拦截器、中间件、过滤器
 
 # CGI
 CGI是一个协议。
